@@ -42,7 +42,6 @@ note_application/
 │   ├── models.py      # Pydantic models
 │   └── storage.py     # In-memory storage
 │
-├── env/               # Virtual environment (ignored by git)
 ├── requirements.txt
 └── README.md
 ```
@@ -152,4 +151,3 @@ Use Swagger UI or Postman to test endpoints.
 
 This project is for learning and practice purposes.
 
----
