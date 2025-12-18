@@ -1,3 +1,14 @@
-env/
+# Python
 __pycache__/
 *.pyc
+.pytest_cache/
+
+# Virtual environment
+env/
+venv/
+
+# Database
+*.db
+
+# OS
+.DS_Store
