@@ -1,16 +1,18 @@
-# 📝 Notes API — FastAPI + SQLAlchemy
+# 📝 Notes API — FastAPI + SQLAlchemy + JWT
 
-A backend Notes API built using **FastAPI** and **SQLAlchemy**, focused on learning **real backend engineering fundamentals**: database integration, relationships, CRUD APIs, testing, and clean project structure.
+A backend Notes API built using **FastAPI** and **SQLAlchemy**, focused on learning **real backend engineering fundamentals**: authentication, authorization, database relationships, and secure CRUD APIs.
 
-This project follows a structured learning roadmap and currently represents **Week 2 (Backend Foundation — SQL + CRUD)**.
+This project follows a structured learning roadmap and currently represents **Week 2 (Backend Foundation — SQL, Auth, Secure CRUD)**.
 
 ---
 
 ## 🚀 Features
 
-* Create users
+* User signup and login
+* JWT-based authentication
 * Create, read, update, and delete notes
-* Notes are linked to users using **foreign keys**
+* Notes are strictly scoped to the authenticated user
+* Secure ownership enforcement (users cannot access others’ notes)
 * Database-generated IDs (no in-memory counters)
 * Clear separation of:
 
@@ -19,7 +21,6 @@ This project follows a structured learning roadmap and currently represents **We
   * ORM models
   * request/response schemas
 * Proper HTTP status codes and error handling
-* Basic API tests using Pytest
 
 ---
 
@@ -30,7 +31,7 @@ This project follows a structured learning roadmap and currently represents **We
 * **SQLAlchemy**
 * **SQLite** (local development database)
 * **Pydantic v2**
-* **Pytest**
+* **JWT (JSON Web Tokens)**
 * **Uvicorn**
 
 ---
@@ -45,12 +46,9 @@ notes_application/
 │   ├── main.py        # FastAPI app entry point
 │   ├── database.py   # DB engine + session handling
 │   ├── models.py     # SQLAlchemy models + Pydantic schemas
-│   └── routes.py     # API routes
+│   ├── routes.py     # API routes
+│   └── security.py   # Password hashing + JWT utilities
 │
-├── tests/
-│   └── test_notes.py
-│
-├── conftest.py
 ├── requirements.txt
 ├── .gitignore
 └── README.md
@@ -106,17 +104,29 @@ Use Swagger UI or Postman to test endpoints.
 
 ---
 
-## 🔌 API Endpoints
+## 🔐 Authentication Flow
 
-### Users
+1. **Signup** → create user
+2. **Login** → receive JWT access token
+3. **Send token** as `Authorization: Bearer <token>`
+4. Access protected note endpoints
 
-| Method | Endpoint | Description   |
-| ------ | -------- | ------------- |
-| POST   | `/users` | Create a user |
+JWT is required for all note-related operations.
 
 ---
 
-### Notes
+## 🔌 API Endpoints
+
+### Authentication
+
+| Method | Endpoint  | Description       |
+| ------ | --------- | ----------------- |
+| POST   | `/signup` | Create a new user |
+| POST   | `/login`  | Login and get JWT |
+
+---
+
+### Notes (JWT Protected)
 
 | Method | Endpoint           | Description      |
 | ------ | ------------------ | ---------------- |
@@ -127,37 +137,40 @@ Use Swagger UI or Postman to test endpoints.
 
 ---
 
-## 📌 Example Request — Create Note
+## 📌 Example — Create Note
+
+### Request (JWT required)
 
 ```json
 {
-  "user_id": 1,
   "title": "My first note",
-  "content": "Learning FastAPI with SQLAlchemy"
+  "content": "Learning FastAPI with SQLAlchemy and JWT"
 }
 ```
 
-### Example Response
+### Response
 
 ```json
 {
   "id": 1,
   "title": "My first note",
-  "content": "Learning FastAPI with SQLAlchemy"
+  "content": "Learning FastAPI with SQLAlchemy and JWT"
 }
 ```
 
+> **Note:**
+> The client never sends `user_id`.
+> Ownership is derived from the authenticated JWT token.
+
 ---
 
-## 🧪 Testing
+## 🔒 Security Highlights
 
-Run tests using:
-
-```bash
-pytest
-```
-
-Tests use FastAPI’s **in-memory HTTP client**, so no server needs to be running.
+* Passwords are hashed before storage
+* JWT tokens are signed and verified
+* User identity is never trusted from client input
+* Notes are accessible only by their owner
+* Unauthorized access returns `404` to avoid data leakage
 
 ---
 
@@ -166,22 +179,24 @@ Tests use FastAPI’s **in-memory HTTP client**, so no server needs to be runnin
 * SQLAlchemy ORM fundamentals
 * Database sessions and lifecycle
 * Foreign keys and relational integrity
-* CRUD API design
-* Request vs response schemas
+* JWT authentication and verification
+* Authorization and ownership enforcement
+* Secure CRUD API design
 * Backend project structuring
 * Git & GitHub workflow
-* API testing with Pytest
 
 ---
 
 ## 📜 Notes
 
 * SQLite is used for local development
-* Password hashing and authentication are **not implemented yet**
-* Authentication (JWT) will be added in the next phase
+* This project prioritizes **correct backend design over shortcuts**
+* Frontend integration and CORS will be added in the next phase
 
 ---
 
 ## 📜 License
 
 This project is for learning and practice purposes.
+
+

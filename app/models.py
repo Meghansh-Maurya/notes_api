@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import declarative_base, relationship
 
@@ -10,12 +10,16 @@ Base = declarative_base()
 
 
 class CreateUser(BaseModel):
+    username: str = Field(min_length=3, max_length=50)
+    password: str = Field(min_length=6)
+
+
+class LoginUser(BaseModel):
     username: str
     password: str
 
 
 class NoteClient(BaseModel):
-    user_id: int
     title: str
     content: str
 

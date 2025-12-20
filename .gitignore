@@ -3,9 +3,12 @@ __pycache__/
 *.pyc
 .pytest_cache/
 
+# tests
+tests/
+conftest.py
+
 # Virtual environment
 env/
-venv/
 
 # Database
 *.db

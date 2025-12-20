@@ -1,16 +1,41 @@
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from app.models import CreateUser, NoteClient, NoteServer, NoteUpdate, User, Note
+from app.models import CreateUser, LoginUser, NoteClient, NoteServer, NoteUpdate, User, Note
 from app.database import get_db
+from app.security import hash_password, verify_password, create_access_token, verify_access_token
 
 
 router = APIRouter()
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
-@router.post("/users")
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    user_id = verify_access_token(token)
+
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    current_user = db.query(User).filter(User.id == user_id).first()
+
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="User not found")
+    
+    return current_user
+
+
+@router.post("/signup")
 def create_user(user: CreateUser, db: Session = Depends(get_db)):
-    # TEMP: password not hashed yet (auth not implemented)
-    db_user = User(username=user.username, password_hash=user.password)
+    existing_user = db.query(User).filter(User.username == user.username).first()
+    
+    if existing_user:
+        raise HTTPException(
+            status_code=400,
+            detail="Username already registered, choose another one"
+        )
+    
+    hashed_pwd = hash_password(user.password)
+    db_user = User(username=user.username, password_hash=hashed_pwd)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -19,10 +44,29 @@ def create_user(user: CreateUser, db: Session = Depends(get_db)):
         "username": db_user.username
     }
 
+@router.post("/login")
+def login_user(user: LoginUser, db : Session = Depends(get_db)):
+    db_user = db.query(User).filter(User.username == user.username).first()
+
+    if not db_user or not verify_password(user.password, db_user.password_hash):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid username or password"
+        )
+    
+    access_token = create_access_token(
+        data = {"sub": str(db_user.id)}
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
+
 
 @router.get('/notes/{note_id}', response_model=NoteServer)
-def get_notes(note_id: int, db: Session = Depends(get_db)):
-    note = db.query(Note).filter(Note.id == note_id).first()
+def get_notes(note_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    note = db.query(Note).filter(Note.id == note_id, Note.user_id == current_user.id).first()
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
     return {
@@ -33,13 +77,9 @@ def get_notes(note_id: int, db: Session = Depends(get_db)):
 
 
 @router.post('/notes', response_model=NoteServer)
-def write_note(note: NoteClient, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == note.user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
+def write_note(note: NoteClient, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     db_note = Note(title=note.title, content=note.content,
-                   user_id=note.user_id)
+                   user_id=current_user.id)
     db.add(db_note)
     db.commit()
     db.refresh(db_note)
@@ -51,29 +91,29 @@ def write_note(note: NoteClient, db: Session = Depends(get_db)):
 
 
 @router.put('/notes/{note_id}', response_model=NoteServer)
-def update_note(note_id: int, note: NoteUpdate, db: Session = Depends(get_db)):
-    note_record = db.query(Note).filter(Note.id == note_id).first()
+def update_note(note_id: int, note: NoteUpdate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    db_note = db.query(Note).filter(Note.id == note_id, Note.user_id == current_user.id).first()
 
-    if not note_record:
+    if not db_note:
         raise HTTPException(status_code=404, detail="Note not found")
 
-    note_record.title = note.title
-    note_record.content = note.content
+    db_note.title = note.title
+    db_note.content = note.content
     db.commit()
-    db.refresh(note_record)
+    db.refresh(db_note)
     return {
-        "id": note_record.id,
-        "title": note_record.title,
-        "content": note_record.content
+        "id": db_note.id,
+        "title": db_note.title,
+        "content": db_note.content
     }
 
 
-@router.delete('/notes/{note_id}/')
-def delete_note(note_id: int, db: Session = Depends(get_db)):
-    note_record = db.query(Note).filter(Note.id == note_id).first()
-    if not note_record:
+@router.delete('/notes/{note_id}')
+def delete_note(note_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    note = db.query(Note).filter(Note.id == note_id, Note.user_id == current_user.id).first()
+    if not note:
         raise HTTPException(status_code=404, detail="Note not found")
-    db.delete(note_record)
+    db.delete(note)
     db.commit()
     return {
         "detail": f"Note {note_id} deleted"
