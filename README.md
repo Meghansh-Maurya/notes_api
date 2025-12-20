@@ -2,7 +2,6 @@
 
 A backend Notes API built using **FastAPI** and **SQLAlchemy**, focused on learning **real backend engineering fundamentals**: authentication, authorization, database relationships, and secure CRUD APIs.
 
-This project follows a structured learning roadmap and currently represents **Week 2 (Backend Foundation — SQL, Auth, Secure CRUD)**.
 
 ---
 
@@ -43,7 +42,7 @@ notes_application/
 │
 ├── app/
 │   ├── __init__.py
-│   ├── main.py        # FastAPI app entry point
+│   ├── main.py       # FastAPI app entry point
 │   ├── database.py   # DB engine + session handling
 │   ├── models.py     # SQLAlchemy models + Pydantic schemas
 │   ├── routes.py     # API routes
