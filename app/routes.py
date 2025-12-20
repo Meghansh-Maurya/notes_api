@@ -10,6 +10,7 @@ router = APIRouter()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
+
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     user_id = verify_access_token(token)
 
@@ -20,20 +21,21 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
     if current_user is None:
         raise HTTPException(status_code=401, detail="User not found")
-    
+
     return current_user
 
 
 @router.post("/signup")
 def create_user(user: CreateUser, db: Session = Depends(get_db)):
-    existing_user = db.query(User).filter(User.username == user.username).first()
-    
+    existing_user = db.query(User).filter(
+        User.username == user.username).first()
+
     if existing_user:
         raise HTTPException(
             status_code=400,
             detail="Username already registered, choose another one"
         )
-    
+
     hashed_pwd = hash_password(user.password)
     db_user = User(username=user.username, password_hash=hashed_pwd)
     db.add(db_user)
@@ -44,8 +46,9 @@ def create_user(user: CreateUser, db: Session = Depends(get_db)):
         "username": db_user.username
     }
 
+
 @router.post("/login")
-def login_user(user: LoginUser, db : Session = Depends(get_db)):
+def login_user(user: LoginUser, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.username == user.username).first()
 
     if not db_user or not verify_password(user.password, db_user.password_hash):
@@ -53,9 +56,9 @@ def login_user(user: LoginUser, db : Session = Depends(get_db)):
             status_code=401,
             detail="Invalid username or password"
         )
-    
+
     access_token = create_access_token(
-        data = {"sub": str(db_user.id)}
+        data={"sub": str(db_user.id)}
     )
 
     return {
@@ -65,8 +68,9 @@ def login_user(user: LoginUser, db : Session = Depends(get_db)):
 
 
 @router.get('/notes/{note_id}', response_model=NoteServer)
-def get_notes(note_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    note = db.query(Note).filter(Note.id == note_id, Note.user_id == current_user.id).first()
+def get_note(note_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    note = db.query(Note).filter(Note.id == note_id,
+                                 Note.user_id == current_user.id).first()
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
     return {
@@ -76,7 +80,7 @@ def get_notes(note_id: int, current_user: User = Depends(get_current_user), db: 
     }
 
 
-@router.post('/notes', response_model=NoteServer)
+@router.post('/note', response_model=NoteServer)
 def write_note(note: NoteClient, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     db_note = Note(title=note.title, content=note.content,
                    user_id=current_user.id)
@@ -92,7 +96,8 @@ def write_note(note: NoteClient, current_user: User = Depends(get_current_user),
 
 @router.put('/notes/{note_id}', response_model=NoteServer)
 def update_note(note_id: int, note: NoteUpdate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    db_note = db.query(Note).filter(Note.id == note_id, Note.user_id == current_user.id).first()
+    db_note = db.query(Note).filter(Note.id == note_id,
+                                    Note.user_id == current_user.id).first()
 
     if not db_note:
         raise HTTPException(status_code=404, detail="Note not found")
@@ -110,7 +115,8 @@ def update_note(note_id: int, note: NoteUpdate, current_user: User = Depends(get
 
 @router.delete('/notes/{note_id}')
 def delete_note(note_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    note = db.query(Note).filter(Note.id == note_id, Note.user_id == current_user.id).first()
+    note = db.query(Note).filter(Note.id == note_id,
+                                 Note.user_id == current_user.id).first()
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
     db.delete(note)
@@ -118,3 +124,10 @@ def delete_note(note_id: int, current_user: User = Depends(get_current_user), db
     return {
         "detail": f"Note {note_id} deleted"
     }
+
+
+@router.get('/notes', response_model=list[NoteServer])
+def get_notes(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    notes = db.query(Note).filter(Note.user_id == current_user.id).all()
+
+    return notes
