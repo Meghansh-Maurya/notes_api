@@ -10,6 +10,9 @@ conftest.py
 # Virtual environment
 env/
 
+# Environment variables
+.env
+
 # Database
 *.db
 
