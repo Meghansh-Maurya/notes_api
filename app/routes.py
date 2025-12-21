@@ -80,7 +80,7 @@ def get_note(note_id: int, current_user: User = Depends(get_current_user), db: S
     }
 
 
-@router.post('/note', response_model=NoteServer)
+@router.post('/notes', response_model=NoteServer)
 def write_note(note: NoteClient, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     db_note = Note(title=note.title, content=note.content,
                    user_id=current_user.id)

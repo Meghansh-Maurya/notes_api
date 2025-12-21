@@ -1,37 +1,54 @@
-# 📝 Notes API — FastAPI + SQLAlchemy + JWT
+# 📝 Notes App — FastAPI + Streamlit
 
-A backend Notes API built using **FastAPI** and **SQLAlchemy**, focused on learning **real backend engineering fundamentals**: authentication, authorization, database relationships, and secure CRUD APIs.
+A full-stack Notes application built with **FastAPI (backend)** and **Streamlit (frontend)**, focused on learning **real backend engineering concepts**: authentication, authorization, database relationships, and client–server interaction.
 
+This project was built step-by-step as part of a structured learning roadmap and currently represents Frontend Integration.
 
 ---
 
 ## 🚀 Features
 
-* User signup and login
-* JWT-based authentication
-* Create, read, update, and delete notes
-* Notes are strictly scoped to the authenticated user
-* Secure ownership enforcement (users cannot access others’ notes)
-* Database-generated IDs (no in-memory counters)
-* Clear separation of:
+### 🔐 Authentication
 
-  * routes
-  * database configuration
-  * ORM models
-  * request/response schemas
-* Proper HTTP status codes and error handling
+* User signup
+* Login with JWT (Bearer token)
+* Secure password hashing
+* Token-based authentication
+
+### 🗒 Notes Management
+
+* Create notes
+* View all notes (user-scoped)
+* Edit notes
+* Delete notes
+* Notes are strictly **owned by users** (authorization enforced on backend)
+
+### 🖥 Frontend
+
+* Built using Streamlit
+* Login & signup UI
+* Create, edit, delete notes from UI
+* JWT stored in client session state
+* UI reacts to auth state (login/logout)
 
 ---
 
 ## 🧠 Tech Stack
 
+### Backend
+
 * **Python**
 * **FastAPI**
 * **SQLAlchemy**
-* **SQLite** (local development database)
+* **SQLite**
 * **Pydantic v2**
-* **JWT (JSON Web Tokens)**
+* **JWT (OAuth2PasswordBearer)**
 * **Uvicorn**
+
+### Frontend
+
+* **Streamlit**
+* **Requests**
 
 ---
 
@@ -42,12 +59,13 @@ notes_application/
 │
 ├── app/
 │   ├── __init__.py
-│   ├── main.py       # FastAPI app entry point
-│   ├── database.py   # DB engine + session handling
+│   ├── main.py        # FastAPI app entry point
+│   ├── database.py   # DB engine & session handling
 │   ├── models.py     # SQLAlchemy models + Pydantic schemas
-│   ├── routes.py     # API routes
-│   └── security.py   # Password hashing + JWT utilities
+│   ├── routes.py     # Auth & Notes API routes
+│   └── security.py   # Password hashing & JWT logic
 │
+├── frontend.py       # Streamlit frontend
 ├── requirements.txt
 ├── .gitignore
 └── README.md
@@ -77,13 +95,13 @@ pip install -r requirements.txt
 
 ---
 
-### 3️⃣ Run the server
+### 3️⃣ Run the backend (FastAPI)
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-Server will start at:
+Backend runs at:
 
 ```
 http://127.0.0.1:8000
@@ -91,111 +109,78 @@ http://127.0.0.1:8000
 
 ---
 
-### 4️⃣ Open API Docs
+### 4️⃣ Run the frontend (Streamlit)
 
-Visit:
+Open a new terminal (same env):
 
-```
-http://127.0.0.1:8000/docs
-```
-
-Use Swagger UI or Postman to test endpoints.
-
----
-
-## 🔐 Authentication Flow
-
-1. **Signup** → create user
-2. **Login** → receive JWT access token
-3. **Send token** as `Authorization: Bearer <token>`
-4. Access protected note endpoints
-
-JWT is required for all note-related operations.
-
----
-
-## 🔌 API Endpoints
-
-### Authentication
-
-| Method | Endpoint  | Description       |
-| ------ | --------- | ----------------- |
-| POST   | `/signup` | Create a new user |
-| POST   | `/login`  | Login and get JWT |
-
----
-
-### Notes (JWT Protected)
-
-| Method | Endpoint           | Description      |
-| ------ | ------------------ | ---------------- |
-| POST   | `/notes`           | Create a note    |
-| GET    | `/notes/{note_id}` | Get a note by ID |
-| PUT    | `/notes/{note_id}` | Update a note    |
-| DELETE | `/notes/{note_id}` | Delete a note    |
-
----
-
-## 📌 Example — Create Note
-
-### Request (JWT required)
-
-```json
-{
-  "title": "My first note",
-  "content": "Learning FastAPI with SQLAlchemy and JWT"
-}
+```bash
+streamlit run frontend.py
 ```
 
-### Response
+Frontend runs at:
 
-```json
-{
-  "id": 1,
-  "title": "My first note",
-  "content": "Learning FastAPI with SQLAlchemy and JWT"
-}
+```
+http://localhost:8501
 ```
 
-> **Note:**
-> The client never sends `user_id`.
-> Ownership is derived from the authenticated JWT token.
+---
+
+## 🔌 API Endpoints (Backend)
+
+### Auth
+
+| Method | Endpoint  | Description     |
+| ------ | --------- | --------------- |
+| POST   | `/signup` | Create new user |
+| POST   | `/login`  | Login & get JWT |
+
+### Notes (JWT required)
+
+| Method | Endpoint      | Description        |
+| ------ | ------------- | ------------------ |
+| GET    | `/notes`      | Get all user notes |
+| GET    | `/notes/{id}` | Get single note    |
+| POST   | `/notes`      | Create note        |
+| PUT    | `/notes/{id}` | Update note        |
+| DELETE | `/notes/{id}` | Delete note        |
 
 ---
 
-## 🔒 Security Highlights
+## 🔐 Security Design (Important)
 
-* Passwords are hashed before storage
-* JWT tokens are signed and verified
-* User identity is never trusted from client input
-* Notes are accessible only by their owner
-* Unauthorized access returns `404` to avoid data leakage
+* Frontend **never sends `user_id`**
+* Backend derives user identity from JWT
+* All note operations are scoped using:
 
----
-
-## 📈 Learning Goals Covered
-
-* SQLAlchemy ORM fundamentals
-* Database sessions and lifecycle
-* Foreign keys and relational integrity
-* JWT authentication and verification
-* Authorization and ownership enforcement
-* Secure CRUD API design
-* Backend project structuring
-* Git & GitHub workflow
+  ```
+  note.user_id == current_user.id
+  ```
+* Prevents unauthorized access and ID tampering (BOLA protection)
 
 ---
 
-## 📜 Notes
+## 🧠 Key Concepts Learned
+
+* JWT-based authentication & authorization
+* Password hashing & verification
+* SQLAlchemy ORM & relationships
+* Backend ownership enforcement
+* Client–server separation
+* Streamlit reactive UI model
+* Session-based frontend state
+* Secure CRUD design
+
+---
+
+## 📌 Notes
 
 * SQLite is used for local development
-* This project prioritizes **correct backend design over shortcuts**
-* Frontend integration and CORS will be added in the next phase
+* CORS & deployment will be added next
+* This project prioritizes **understanding over shortcuts**
 
 ---
 
 ## 📜 License
 
 This project is for learning and practice purposes.
-
 
