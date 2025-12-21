@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 
-API_BASE_URL = "https://notes-api.onrender.com"
+API_BASE_URL = "https://notes-api-5nty.onrender.com/"
 
 
 st.title("Notes App")
