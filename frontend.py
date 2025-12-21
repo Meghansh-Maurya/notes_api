@@ -36,7 +36,7 @@ if not st.session_state.token:
             st.success("User created successfully. Please log in.")
 
         else:
-            st.error(response.json().get("detail", "Signup failed"))
+            st.error(f"Error {response.status_code}: {response.text}")
 
 
     st.subheader("Login")
