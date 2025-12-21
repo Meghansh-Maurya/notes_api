@@ -8,3 +8,4 @@ python-jose[cryptography]
 streamlit
 requests
 psycopg2-binary
+python-dotenv
