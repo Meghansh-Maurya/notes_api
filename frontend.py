@@ -1,8 +1,11 @@
 import streamlit as st
 import requests
+import os
+from dotenv import load_dotenv
 
-API_BASE_URL = "https://notes-api-5nty.onrender.com/"
+load_dotenv()
 
+API_BASE_URL = os.getenv("API_BASE_URL")
 
 st.title("Notes App")
 
