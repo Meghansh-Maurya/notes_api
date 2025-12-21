@@ -1,6 +1,10 @@
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 
 # --------------------Password hashing context---------------------
@@ -23,7 +27,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 # --------------------JWT token handling---------------------------
 
 
-SECRET_KEY = "this_is_my_secret_key_change_me"
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
