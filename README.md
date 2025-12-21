@@ -1,8 +1,10 @@
-# 📝 Notes App — FastAPI + Streamlit
+# 📝 Notes App — FastAPI + PostgreSQL + Streamlit
 
-A full-stack Notes application built with **FastAPI (backend)** and **Streamlit (frontend)**, focused on learning **real backend engineering concepts**: authentication, authorization, database relationships, and client–server interaction.
+A **full-stack Notes application** built with **FastAPI**, **PostgreSQL**, and **Streamlit**, focused on learning **real backend engineering fundamentals** and deploying a working product end-to-end.
 
-This project was built step-by-step as part of a structured learning roadmap and currently represents Frontend Integration.
+This project covers **authentication, database design, secure CRUD, deployment, and frontend integration**.
+
+🔗 **Live App:** [https://notesapi.streamlit.app/](https://notesapi.streamlit.app/)
 
 ---
 
@@ -10,26 +12,24 @@ This project was built step-by-step as part of a structured learning roadmap and
 
 ### 🔐 Authentication
 
-* User signup
-* Login with JWT (Bearer token)
+* User signup & login
+* JWT-based authentication
 * Secure password hashing
-* Token-based authentication
+* Token-protected APIs
 
-### 🗒 Notes Management
+### 📝 Notes Management
 
-* Create notes
-* View all notes (user-scoped)
-* Edit notes
-* Delete notes
-* Notes are strictly **owned by users** (authorization enforced on backend)
+* Create, read, update, delete notes
+* Notes are **strictly user-owned**
+* Users can only access their own data
+* Database-generated IDs (no in-memory hacks)
 
-### 🖥 Frontend
+### 🌐 Deployment
 
-* Built using Streamlit
-* Login & signup UI
-* Create, edit, delete notes from UI
-* JWT stored in client session state
-* UI reacts to auth state (login/logout)
+* Backend deployed on **Render**
+* PostgreSQL running in production
+* Frontend deployed on **Streamlit Cloud**
+* CORS configured correctly for browser security
 
 ---
 
@@ -39,16 +39,21 @@ This project was built step-by-step as part of a structured learning roadmap and
 
 * **Python**
 * **FastAPI**
-* **SQLAlchemy**
-* **SQLite**
+* **SQLAlchemy ORM**
+* **PostgreSQL**
 * **Pydantic v2**
-* **JWT (OAuth2PasswordBearer)**
-* **Uvicorn**
+* **JWT (Authentication)**
 
 ### Frontend
 
 * **Streamlit**
-* **Requests**
+* **Requests (API calls)**
+
+### Infrastructure
+
+* **Render** (Backend + Database)
+* **Streamlit Cloud** (Frontend)
+* **GitHub** (Version control)
 
 ---
 
@@ -59,11 +64,11 @@ notes_application/
 │
 ├── app/
 │   ├── __init__.py
-│   ├── main.py        # FastAPI app entry point
-│   ├── database.py   # DB engine & session handling
-│   ├── models.py     # SQLAlchemy models + Pydantic schemas
-│   ├── routes.py     # Auth & Notes API routes
-│   └── security.py   # Password hashing & JWT logic
+│   ├── main.py       # FastAPI app entry point
+│   ├── database.py   # DB engine + session handling
+│   ├── models.py     # ORM models + Pydantic schemas
+│   ├── routes.py     # Auth & Notes APIs
+│   └── security.py   # Password hashing + JWT logic
 │
 ├── frontend.py       # Streamlit frontend
 ├── requirements.txt
@@ -73,7 +78,7 @@ notes_application/
 
 ---
 
-## ▶️ How to Run the Project
+## ▶️ Run Locally (Optional)
 
 ### 1️⃣ Activate virtual environment
 
@@ -95,92 +100,83 @@ pip install -r requirements.txt
 
 ---
 
-### 3️⃣ Run the backend (FastAPI)
+### 3️⃣ Set environment variables
+
+```bash
+DATABASE_URL=postgresql://...
+SECRET_KEY=your_secret_key
+```
+
+---
+
+### 4️⃣ Run backend
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-Backend runs at:
-
-```
-http://127.0.0.1:8000
-```
-
 ---
 
-### 4️⃣ Run the frontend (Streamlit)
-
-Open a new terminal (same env):
+### 5️⃣ Run frontend
 
 ```bash
 streamlit run frontend.py
 ```
 
-Frontend runs at:
-
-```
-http://localhost:8501
-```
-
 ---
 
-## 🔌 API Endpoints (Backend)
+## 🔌 API Overview
 
 ### Auth
 
-| Method | Endpoint  | Description     |
-| ------ | --------- | --------------- |
-| POST   | `/signup` | Create new user |
-| POST   | `/login`  | Login & get JWT |
+* `POST /signup`
+* `POST /login`
 
 ### Notes (JWT required)
 
-| Method | Endpoint      | Description        |
-| ------ | ------------- | ------------------ |
-| GET    | `/notes`      | Get all user notes |
-| GET    | `/notes/{id}` | Get single note    |
-| POST   | `/notes`      | Create note        |
-| PUT    | `/notes/{id}` | Update note        |
-| DELETE | `/notes/{id}` | Delete note        |
+* `POST /notes`
+* `GET /notes`
+* `GET /notes/{note_id}`
+* `PUT /notes/{note_id}`
+* `DELETE /notes/{note_id}`
 
 ---
 
 ## 🔐 Security Design (Important)
 
-* Frontend **never sends `user_id`**
-* Backend derives user identity from JWT
-* All note operations are scoped using:
-
-  ```
-  note.user_id == current_user.id
-  ```
-* Prevents unauthorized access and ID tampering (BOLA protection)
+* Passwords are **hashed**, never stored in plain text
+* JWT tokens are **signed using a server secret**
+* User identity is derived from JWT, **not client input**
+* All note operations enforce **user ownership**
 
 ---
 
-## 🧠 Key Concepts Learned
+## 📈 What This Project Teaches
 
-* JWT-based authentication & authorization
-* Password hashing & verification
-* SQLAlchemy ORM & relationships
-* Backend ownership enforcement
-* Client–server separation
-* Streamlit reactive UI model
-* Session-based frontend state
-* Secure CRUD design
+* How CRUD works **in theory and reality**
+* Why authentication must be server-controlled
+* How JWT actually secures APIs
+* How ORMs manage DB + in-memory state
+* How deployments fail (and how to fix them)
+* How frontend talks to a real backend
+* Why CORS exists and how to configure it
+* How to ship, not just code
 
 ---
 
-## 📌 Notes
+## 🧭 Roadmap Status
 
-* SQLite is used for local development
-* CORS & deployment will be added next
-* This project prioritizes **understanding over shortcuts**
+* ✅ Backend foundation (FastAPI + SQLAlchemy)
+* ✅ Authentication (JWT)
+* ✅ PostgreSQL migration
+* ✅ Production deployment
+* ✅ Frontend integration
+* 🔜 Testing (Pytest)
+* 🔜 GenAI features (RAG, LLM APIs)
 
 ---
 
 ## 📜 License
 
-This project is for learning and practice purposes.
+This project is built for **learning, experimentation, and portfolio use**.
 
