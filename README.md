@@ -4,7 +4,7 @@ A **full-stack Notes application** built with **FastAPI**, **PostgreSQL**, and *
 
 This project covers **authentication, database design, secure CRUD, deployment, and frontend integration**.
 
-🔗 **Live App:** [https://notesapi.streamlit.app/](https://notesapi.streamlit.app/)
+🔗 **Live App:** [https://notesapi.streamlit.app/](https://notesapi.streamlit.app/)   (currently disabled)
 
 ---
 
